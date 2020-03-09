@@ -33,4 +33,5 @@ def calculate_call_rate(call_start: datetime, call_end: datetime) -> Decimal:
         minute_rate = MINUTE_RATE
     cost = CONNECTION_FEE + (minute_rate * billable_minutes)
     # Round cost to 2 decimal places
+    cost = round(cost, 2)
     return Decimal(cost).quantize(Decimal('.01'), rounding=ROUND_DOWN)
