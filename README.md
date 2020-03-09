@@ -213,3 +213,16 @@ The following phone calls have been made from the number 99 98852 6423 to 99 334
 * Be careful with REST API details. They can bite you!
 
 **Have fun!**
+
+# Requirements
+This project uses Python 3.7 and Django 2.2 LTS. Other required packages are listed in requirements.txt file.
+
+> Instructions for Unix-based systems. For Windows, commands may differ.
+
+# Installation
+Create virtual environment called 'env' and install packages.
+```
+python3.7 -m venv env
+source env/bin/activate
+pip install -r requirements.txt
+```
