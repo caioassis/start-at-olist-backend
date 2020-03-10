@@ -1,4 +1,6 @@
-from rest_framework.serializers import ModelSerializer, Serializer, DateTimeField, CharField, DecimalField
+from datetime import timedelta
+from rest_framework.serializers import (ModelSerializer, Serializer, DateTimeField, CharField, DecimalField,
+                                        IntegerField, SerializerMethodField)
 from .models import CallStartRecord, CallEndRecord
 
 
@@ -20,9 +22,19 @@ class CallRecordSerializer(Serializer):
     """
     Serializer that gathers information from Call Start and Call End models.
     """
-    start = CharField()
-    end = CharField()
+    start = DateTimeField()
+    end = DateTimeField()
     call_id = CharField()
-    source = CharField()
     destination = CharField()
+    duration = SerializerMethodField()
     price = DecimalField(max_digits=10, decimal_places=2)
+
+    def get_duration(self, obj):
+        """
+        Format duration from seconds to h m s.
+        """
+        duration = int(obj['duration'])
+        hours, duration = divmod(duration, 60 * 60)
+        minutes, duration = divmod(duration, 60)
+        seconds = duration
+        return f'{hours}h{minutes}m{seconds}s'
