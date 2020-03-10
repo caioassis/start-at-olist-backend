@@ -6,7 +6,7 @@ from .utils import calculate_call_rate
 
 
 class CallRecord(models.Model):
-    call_id = models.CharField(verbose_name='Call Unique ID', max_length=50)
+    call_id = models.CharField(verbose_name='Call Unique ID', max_length=50, unique=True)
     timestamp = models.DateTimeField(verbose_name='Timestamp', blank=True)
 
     class Meta:
