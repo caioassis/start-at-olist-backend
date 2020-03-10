@@ -5,7 +5,7 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
-from .serializers import CallStartRecordSerializer, CallEndRecordCreateSerializer
+from .serializers import CallStartRecordSerializer, CallEndRecordCreateSerializer, CallRecordSerializer
 from .models import CallEndRecord
 
 
@@ -38,7 +38,7 @@ class TelephonyBillAPIView(APIView):
                     return Response({'invalid': 'You can\'t get bills from next months.'}, status=HTTP_400_BAD_REQUEST)
             from_date = today.replace(year=year, month=month, day=1)
             to_date = from_date
-            while to_date.month == from_date:
+            while to_date.month == from_date.month:
                 to_date += timedelta(days=1)
         else:
             current_month = today.replace(day=1)
@@ -46,4 +46,5 @@ class TelephonyBillAPIView(APIView):
             from_date = last_month
             to_date = current_month
         records = CallEndRecord.objects.get_calls(from_date, to_date, source=source)
-        return Response({'records': records})
+        serializer = CallRecordSerializer(records, many=True)
+        return Response({'source': source, 'start_period': from_date, 'end_period': to_date, 'records': serializer.data})
