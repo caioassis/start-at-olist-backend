@@ -1,9 +1,9 @@
 import uuid
-from decimal import Decimal, ROUND_DOWN
 from datetime import datetime, timedelta
+from decimal import Decimal, ROUND_DOWN
 from django.test import TestCase
 from django.utils import timezone
-from .models import CallStartRecord, CallEndRecord
+from .models import CallEndRecord, CallStartRecord
 
 
 class CallStartRecordTestCase(TestCase):

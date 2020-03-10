@@ -5,8 +5,8 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
-from .serializers import CallStartRecordSerializer, CallEndRecordCreateSerializer, CallRecordSerializer
 from .models import CallEndRecord
+from .serializers import CallEndRecordCreateSerializer, CallRecordSerializer, CallStartRecordSerializer
 
 
 class CallStartRecordAPIView(CreateAPIView):

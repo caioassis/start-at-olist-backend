@@ -1,8 +1,8 @@
+from django.core.validators import MaxLengthValidator, MinLengthValidator, RegexValidator
 from django.db import models
-from django.core.validators import RegexValidator, MinLengthValidator, MaxLengthValidator
 from django.utils import timezone
-from .utils import calculate_call_rate
 from .managers import CallRecordManager
+from .utils import calculate_call_rate
 
 
 class CallRecord(models.Model):

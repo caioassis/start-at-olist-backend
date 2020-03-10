@@ -1,6 +1,6 @@
-from rest_framework.serializers import (ModelSerializer, Serializer, DateTimeField, CharField, DecimalField,
+from rest_framework.serializers import (CharField, DateTimeField, DecimalField, ModelSerializer, Serializer,
                                         SerializerMethodField)
-from .models import CallStartRecord, CallEndRecord
+from .models import CallEndRecord, CallStartRecord
 
 
 class CallStartRecordSerializer(ModelSerializer):
