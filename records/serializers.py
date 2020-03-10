@@ -1,6 +1,5 @@
-from datetime import timedelta
 from rest_framework.serializers import (ModelSerializer, Serializer, DateTimeField, CharField, DecimalField,
-                                        IntegerField, SerializerMethodField)
+                                        SerializerMethodField)
 from .models import CallStartRecord, CallEndRecord
 
 
