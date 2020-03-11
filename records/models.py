@@ -32,9 +32,6 @@ class CallStartRecord(CallRecord):
             self.timestamp = timezone.now()
         super().save(*args, **kwargs)
 
-    def __str__(self):
-        return self.timestamp
-
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['call_id'], name='callstartrecord_unique_callid')
