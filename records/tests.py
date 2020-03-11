@@ -9,6 +9,8 @@ from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_RE
 from rest_framework.test import APIClient, APITestCase
 from .models import CallEndRecord, CallStartRecord
 
+from django.utils import dateparse
+
 
 class CallStartRecordTestCase(TestCase):
 
@@ -97,6 +99,9 @@ class CallEndRecordAPITestCase(APITestCase):
         timestamp = self.call_start_record.timestamp + timedelta(minutes=5)
         response = self.client.post(self.post_url, {'call_id': call_id, 'timestamp': timestamp})
         self.assertEqual(response.status_code, HTTP_201_CREATED)
+        self.assertIn('timestamsp', response.data)
+        call_end_record_timestamp = dateparse.parse_datetime(response.data['timestamp'])
+        self.assertEqual(call_end_record_timestamp, timestamp)
         self.assertIsNotNone(response.data['price'])
 
 
