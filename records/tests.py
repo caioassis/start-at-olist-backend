@@ -80,3 +80,20 @@ class CallStartRecordAPITestCase(APITestCase):
         data['destination'] = '11223344556'  # valid destination (length 11)
         response = self.client.post(self.post_url, data)
         self.assertEqual(response.status_code, HTTP_201_CREATED)
+
+
+class CallEndRecordAPITestCase(APITestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.client = APIClient()
+        cls.post_url = reverse('call_end_record_create')
+        cls.call_start_record = CallStartRecord.objects.create(source='505', call_id=str(uuid.uuid4()), destination='1234567890')
+
+    def test_new_call_end_record(self):
+        call_id = self.call_start_record.call_id
+        timestamp = self.call_start_record.timestamp + timedelta(minutes=5)
+        response = self.client.post(self.post_url, {'call_id': call_id, 'timestamp': timestamp})
+        self.assertEqual(response.status_code, HTTP_201_CREATED)
+        self.assertIsNotNone(response.data['price'])
