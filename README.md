@@ -225,4 +225,12 @@ Create virtual environment called 'env' and install packages.
 python3.7 -m venv env
 source env/bin/activate
 pip install -r requirements.txt
+python manage.py makemigrations
+python manage.py migrate
+```
+
+# Testing
+Run test suite.
+```
+python manage.py test
 ```
