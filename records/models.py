@@ -1,7 +1,7 @@
 from django.core.validators import MaxLengthValidator, MinLengthValidator, RegexValidator
 from django.db import models
 from django.utils import timezone
-from .managers import CallRecordManager
+from .querysets import CallRecordQuerySet
 from .utils import calculate_call_rate
 
 
@@ -41,7 +41,7 @@ class CallStartRecord(CallRecord):
 class CallEndRecord(CallRecord):
     price = models.DecimalField(verbose_name='Price', decimal_places=2, max_digits=5, blank=True, null=True)
 
-    objects = CallRecordManager()
+    objects = CallRecordQuerySet.as_manager()
 
     def save(self, *args, **kwargs):
         if not self.timestamp:
