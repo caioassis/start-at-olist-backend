@@ -14,7 +14,8 @@ class CallEndRecordCreateSerializer(ModelSerializer):
 
     class Meta:
         model = CallEndRecord
-        fields = ['call_id']
+        fields = ['id', 'call_id', 'timestamp', 'price']
+        read_only_fields = ['timestamp', 'price']
 
 
 class CallRecordSerializer(Serializer):
