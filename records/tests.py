@@ -42,20 +42,21 @@ class CalculateCallRateTestCase(TestCase):
             {
                 'start': datetime(2020, 3, 9, 5, 30, 0, 0),
                 'end': datetime(2020, 3, 9, 22, 30, 0, 0),
-                'billable_minutes': 960
+                'billable_minutes': 961
             },
             {
                 'start': datetime(2020, 3, 9, 12, 0, 0, 0),
                 'end': datetime(2020, 3, 11, 12, 0, 0, 0),
-                'billable_minutes': 1920
+                'billable_minutes': 1921
             }
         ]
 
-        for case in cases:
-            self.assertEqual(
-                float(calculate_call_rate(case['start'], case['end'])),
-                round((CONNECTION_FEE + MINUTE_RATE * case['billable_minutes']), 2)
-            )
+        for index, case in enumerate(cases):
+            with self.subTest(index=index):
+                self.assertEqual(
+                    float(calculate_call_rate(case['start'], case['end'])),
+                    round((CONNECTION_FEE + MINUTE_RATE * case['billable_minutes']), 2)
+                )
 
 
 class CallStartRecordTestCase(TestCase):
