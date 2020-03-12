@@ -7,7 +7,7 @@ from .utils import calculate_call_rate
 
 class CallRecord(models.Model):
     call_id = models.CharField(verbose_name='Call Unique ID', max_length=50, unique=True)
-    timestamp = models.DateTimeField(verbose_name='Timestamp', blank=True)
+    timestamp = models.DateTimeField(verbose_name='Timestamp')
 
     class Meta:
         abstract = True
@@ -27,11 +27,6 @@ class CallStartRecord(CallRecord):
 
     objects = models.Manager()
 
-    def save(self, *args, **kwargs):
-        if not self.timestamp:
-            self.timestamp = timezone.now()
-        super().save(*args, **kwargs)
-
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['call_id'], name='callstartrecord_unique_callid')
@@ -44,8 +39,6 @@ class CallEndRecord(CallRecord):
     objects = CallRecordQuerySet.as_manager()
 
     def save(self, *args, **kwargs):
-        if not self.timestamp:
-            self.timestamp = timezone.now()
         if self.price is None:
             try:
                 call_start = CallStartRecord.objects.get(call_id=self.call_id)
