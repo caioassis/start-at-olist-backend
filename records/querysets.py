@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 from django.apps import apps
-from django.db.models import DateTimeField, ExpressionWrapper, F, IntegerField, OuterRef, QuerySet, Subquery
+from django.db.models import DateTimeField, DurationField, ExpressionWrapper, F, OuterRef, QuerySet, Subquery
 from django.db.models.functions import Cast
 
 
@@ -18,11 +18,8 @@ class CallRecordQuerySet(QuerySet):
             source=Subquery(call_start_records.values('source')),
             destination=Subquery(call_start_records.values('destination')),
             duration=ExpressionWrapper(
-                ExpressionWrapper(
-                    Cast('end', output_field=DateTimeField()) - Cast('start', output_field=DateTimeField()),
-                    output_field=IntegerField()
-                ) / 1_000_000,
-                output_field=IntegerField()
+                Cast('end', output_field=DateTimeField()) - Cast('start', output_field=DateTimeField()),
+                output_field=DurationField()
             )
         )
         if kwargs:
