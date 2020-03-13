@@ -39,7 +39,7 @@ Finally, run your server.
 python manage.py runserver
 ```
 ## Testing
-Execute library tests.
+Execute tests.
 ```
 python manage.py test
 ```
