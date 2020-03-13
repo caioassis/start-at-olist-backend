@@ -1,3 +1,55 @@
+# Telecom Project
+
+## Description
+
+Assessment project of Olist, which exposes an API of call records for a telecom system.
+
+## Requirements
+
+- Python 3.7 or higher
+- Pip 3.7
+- Django 2.2.11 (LTS version)
+- Django Rest Framework 3.11
+
+## Installation
+> The following steps are meant to work in Linux OS. Windows commands may differ.
+
+Clone this project.
+```
+git clone https://github.com/caioassis/start-at-olist
+```
+Create a virtual environment (make sure to have pip3.7 installed) and activate it.
+```
+pip3.7 -m venv env
+source env/bin/activate
+```
+
+Install project packages.
+```
+pip install -r requirements.txt
+```
+Create a .env file as a copy of .env.example and set the variables.
+
+Migrate Database
+```
+python manage.py migrate
+```
+Finally, run your server.
+```
+python manage.py runserver
+```
+## Testing
+Execute library tests.
+```
+python manage.py test
+```
+
+## Documentation
+Available in /docs/ endpoint.
+
+## Production
+The project is deployed in Heroku and running on https://telecom-project-olist.herokuapp.com/.
+
 # Work at Olist
 
 [Olist](https://olist.com/) is a company that offers an integration platform
@@ -213,24 +265,3 @@ The following phone calls have been made from the number 99 98852 6423 to 99 334
 * Be careful with REST API details. They can bite you!
 
 **Have fun!**
-
-# Requirements
-This project uses Python 3.7 and Django 2.2 LTS. Other required packages are listed in requirements.txt file.
-
-> Instructions for Unix-based systems. For Windows, commands may differ.
-
-# Installation
-Create virtual environment called 'env' and install packages.
-```
-python3.7 -m venv env
-source env/bin/activate
-pip install -r requirements.txt
-python manage.py makemigrations
-python manage.py migrate
-```
-
-# Testing
-Run test suite.
-```
-python manage.py test
-```
