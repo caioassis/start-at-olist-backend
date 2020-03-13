@@ -46,7 +46,7 @@ class CallRecordSerializer(Serializer):
         """
         Format duration from seconds to h m s.
         """
-        duration = int(obj['duration'])
+        duration = int(obj['duration'].total_seconds())
         hours, duration = divmod(duration, 60 * 60)
         minutes, duration = divmod(duration, 60)
         seconds = duration
