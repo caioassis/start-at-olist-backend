@@ -3,7 +3,6 @@
 ## Faltam algumas coisas na documentação do projeto
 
 - Como configura (.env)?
-- Como acessar a documentação da api do projeto?
 - Qual banco de dados usa? (vimos que tem diferenças no projeto)
 
 Faltaram essas informações no projeto, e isso é bem importante.
@@ -75,6 +74,8 @@ Rola remover o arquivo admin.py ;)
 
 ### Método save de CallEndRecord
 
+> Este ponto não faz sentido pois causa recursão no signal, conversamos isso no bate-papo de feedback
+
 ```python
 def save(self, *args, **kwargs):
     if self.price is None:
@@ -104,6 +105,21 @@ def save_price(sender, instance, **kwargs):
     else:
         instance.price = calculate_call_rate(call_start.timestamp, instance.timestamp)
         instance.save()
+```
+
+.... Edit ...
+
+Baseado no papo que tivemos no feedback talvez dê pra usar o pre_save sem salvar a instância, exemplo:
+
+```python
+@receiver(pre_save, sender=CallEndRecord)
+def save_price(sender, instance, **kwargs):
+    try:
+        call_start = CallStartRecord.objects.get(call_id=instance.call_id)
+    except CallStartRecord.DoesNotExist:
+        pass
+    else:
+        instance.price = calculate_call_rate(call_start.timestamp, instance.timestamp)
 ```
 
 ### CallStartRecord e CallEndRecord a respeito da alocação de espaço em disco
@@ -361,8 +377,8 @@ def get(self, request, *args, **kwargs):
     if not period:
         from_date, to_date = self.get_last_month_first_and_last()
     else:
-        first_day, last_day = calendar.monthrange(period.year, period.month)
-        from_date = period.replace(day=first_day)
+        _, last_day = calendar.monthrange(period.year, period.month)
+        from_date = period.replace(day=1)
         to_date = period.replace(day=last_day)
 
     if not source:
@@ -543,8 +559,9 @@ def test_new_call_start_record_requires_fields(self):
 
     for field in required_fields:
         with self.subTest(field=field):
-            del payload[field]
-            response = self.client.post(self.post_url, payload)
+            test_payload = payload.copy()
+            del test_payload[field]
+            response = self.client.post(self.post_url, test_payload)
             self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
             self.assertContains(response.data, field)
 ```
