@@ -24,8 +24,6 @@ class CallStartRecord(CallRecord):
         ]
     )
 
-    objects = models.Manager()
-
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['call_id'], name='callstartrecord_unique_callid')
