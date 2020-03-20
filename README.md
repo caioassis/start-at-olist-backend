@@ -10,6 +10,7 @@ Assessment project of Olist, which exposes an API of call records for a telecom 
 - Pip 3.7
 - Django 2.2.11 (LTS version)
 - Django Rest Framework 3.11
+- PostgreSQL v12.2
 
 ## Installation
 > The following steps are meant to work in Linux OS. Windows commands may differ.
@@ -29,6 +30,9 @@ Install project packages.
 pip install -r requirements.txt
 ```
 Create a .env file as a copy of .env.example and set the variables.
+```
+cp .env.example .env
+```
 
 Migrate Database
 ```
