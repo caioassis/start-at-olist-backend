@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 from django.apps import apps
 from django.db.models import DateTimeField, DurationField, ExpressionWrapper, F, OuterRef, QuerySet, Subquery
 from django.db.models.functions import Cast
@@ -7,7 +6,7 @@ from django.db.models.functions import Cast
 
 class CallRecordQuerySet(QuerySet):
 
-    def get_calls(self, from_date: datetime, to_date: datetime, **kwargs) -> List:
+    def get_calls(self, from_date: datetime, to_date: datetime, **kwargs) -> QuerySet:
         CallStartRecord = apps.get_model('records', 'CallStartRecord')
         CallEndRecord = apps.get_model('records', 'CallEndRecord')
         call_start_records = CallStartRecord.objects.filter(call_id=OuterRef('call_id'))
