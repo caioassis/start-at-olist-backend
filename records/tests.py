@@ -42,12 +42,12 @@ class CalculateCallRateTestCase(TestCase):
             {
                 'start': datetime(2020, 3, 9, 5, 30, 0, 0),
                 'end': datetime(2020, 3, 9, 22, 30, 0, 0),
-                'billable_minutes': 961
+                'billable_minutes': 960
             },
             {
                 'start': datetime(2020, 3, 9, 12, 0, 0, 0),
                 'end': datetime(2020, 3, 11, 12, 0, 0, 0),
-                'billable_minutes': 1921
+                'billable_minutes': 1920
             }
         ]
 
@@ -87,7 +87,7 @@ class CallStartRecordAPITestCase(APITestCase):
         cls.today = timezone.now().strftime('%Y-%m-%dT%H:%M:%S%z')
 
     def test_new_call_start_record(self):
-        response = self.client.post(self.post_url)
+        response = self.client.post(self.post_url, format='json')
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
         data = {
             'source': '505',
@@ -95,14 +95,13 @@ class CallStartRecordAPITestCase(APITestCase):
             'call_id': '12345',
             'timestamp': self.today
         }
-        response = self.client.post(self.post_url, data)
+        response = self.client.post(self.post_url, data, format='json')
         self.assertEqual(response.status_code, HTTP_201_CREATED)
-        record = response.data
-        self.assertEqual(record['id'], 1)
+        self.assertEqual(CallStartRecord.objects.all().count(), 1)
 
     def test_new_call_start_record_requires_fields(self):
         required_fields = ['call_id', 'destination', 'source', 'timestamp']
-        response = self.client.post(self.post_url)
+        response = self.client.post(self.post_url, format='json')
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
         response_required_fields = sorted(list(response.data.keys()))
         self.assertEqual(response_required_fields, required_fields)
@@ -114,9 +113,9 @@ class CallStartRecordAPITestCase(APITestCase):
             'call_id': '12345',
             'timestamp': self.today
         }
-        response = self.client.post(self.post_url, data)
+        response = self.client.post(self.post_url, data, format='json')
         self.assertEqual(response.status_code, HTTP_201_CREATED)
-        response = self.client.post(self.post_url, data)
+        response = self.client.post(self.post_url, data, format='json')
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
 
     def test_new_call_start_record_with_destination(self):
@@ -126,15 +125,15 @@ class CallStartRecordAPITestCase(APITestCase):
             'call_id': str(uuid.uuid4()),
             'timestamp': self.today
         }
-        response = self.client.post(self.post_url, data)
+        response = self.client.post(self.post_url, data, format='json')
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
         data['call_id'] = str(uuid.uuid4())
         data['destination'] = '1122334455'  # valid destination (length 10)
-        response = self.client.post(self.post_url, data)
+        response = self.client.post(self.post_url, data, format='json')
         self.assertEqual(response.status_code, HTTP_201_CREATED)
         data['call_id'] = str(uuid.uuid4())
         data['destination'] = '11223344556'  # valid destination (length 11)
-        response = self.client.post(self.post_url, data)
+        response = self.client.post(self.post_url, data, format='json')
         self.assertEqual(response.status_code, HTTP_201_CREATED)
 
 
@@ -152,7 +151,8 @@ class CallEndRecordAPITestCase(APITestCase):
     def test_new_call_end_record(self):
         call_id = self.call_start_record.call_id
         timestamp = self.call_start_record.timestamp + timedelta(minutes=5)
-        response = self.client.post(self.post_url, {'call_id': call_id, 'timestamp': timestamp})
+        response = self.client.post(self.post_url, {'call_id': call_id, 'timestamp': timestamp}, format='json')
+        print(response.__dict__)
         self.assertEqual(response.status_code, HTTP_201_CREATED)
         self.assertIn('timestamp', response.data)
         call_end_record_timestamp = dateparse.parse_datetime(response.data['timestamp'])
