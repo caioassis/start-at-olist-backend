@@ -152,7 +152,6 @@ class CallEndRecordAPITestCase(APITestCase):
         call_id = self.call_start_record.call_id
         timestamp = self.call_start_record.timestamp + timedelta(minutes=5)
         response = self.client.post(self.post_url, {'call_id': call_id, 'timestamp': timestamp}, format='json')
-        print(response.__dict__)
         self.assertEqual(response.status_code, HTTP_201_CREATED)
         self.assertIn('timestamp', response.data)
         call_end_record_timestamp = dateparse.parse_datetime(response.data['timestamp'])
