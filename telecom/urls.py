@@ -3,6 +3,6 @@ from rest_framework.documentation import include_docs_urls
 
 
 urlpatterns = [
-    path('call_records/', include('records.urls')),
-    path('docs/', include_docs_urls(title='Library API Project'))
+    path('v1/call-records/', include('records.urls')),
+    path('v1/docs/', include_docs_urls(title='Library API Project'))
 ]
