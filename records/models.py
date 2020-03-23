@@ -24,10 +24,10 @@ class CallStartRecord(CallRecord):
         ]
     )
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['call_id'], name='callstartrecord_unique_callid')
-        ]
+    # class Meta:
+    #     constraints = [
+    #         models.UniqueConstraint(fields=['call_id'], name='callstartrecord_unique_callid')
+    #     ]
 
 
 class CallEndRecord(CallRecord):
@@ -35,7 +35,7 @@ class CallEndRecord(CallRecord):
 
     objects = CallRecordQuerySet.as_manager()
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['call_id'], name='callendrecord_unique_callid')
-        ]
+    # class Meta:
+    #     constraints = [
+    #         models.UniqueConstraint(fields=['call_id'], name='callendrecord_unique_callid')
+    #     ]
