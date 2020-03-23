@@ -1,80 +1,11 @@
 import random
 import uuid
-from datetime import datetime, timedelta
-from django.test import TestCase
+from datetime import timedelta
 from django.urls import reverse
 from django.utils import dateparse, timezone
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 from rest_framework.test import APIClient, APITestCase
-from .models import CallEndRecord, CallStartRecord
-from .utils import CONNECTION_FEE, MINUTE_RATE, calculate_call_rate
-
-
-class CalculateCallRateTestCase(TestCase):
-
-    def test_calculate_call_rate(self):
-        cases = [
-            {
-                'start': datetime(2020, 3, 9, 12, 0, 0, 0),
-                'end': datetime(2020, 3, 9, 13, 0, 0, 0),
-                'billable_minutes': 60
-            },
-            {
-                'start': datetime(2020, 3, 9, 5, 0, 0, 0),
-                'end': datetime(2020, 3, 9, 5, 30, 0, 0),
-                'billable_minutes': 0
-            },
-            {
-                'start': datetime(2020, 3, 9, 22, 30, 0, 0),
-                'end': datetime(2020, 3, 9, 23, 0, 0, 0),
-                'billable_minutes': 0
-            },
-            {
-                'start': datetime(2020, 3, 9, 5, 50, 0, 0),
-                'end': datetime(2020, 3, 9, 6, 10, 0, 0),
-                'billable_minutes': 10
-            },
-            {
-                'start': datetime(2020, 3, 9, 21, 50, 0, 0),
-                'end': datetime(2020, 3, 9, 22, 10, 0, 0),
-                'billable_minutes': 10
-            },
-            {
-                'start': datetime(2020, 3, 9, 5, 30, 0, 0),
-                'end': datetime(2020, 3, 9, 22, 30, 0, 0),
-                'billable_minutes': 960
-            },
-            {
-                'start': datetime(2020, 3, 9, 12, 0, 0, 0),
-                'end': datetime(2020, 3, 11, 12, 0, 0, 0),
-                'billable_minutes': 1920
-            }
-        ]
-
-        for index, case in enumerate(cases):
-            with self.subTest(index=index):
-                self.assertEqual(
-                    float(calculate_call_rate(case['start'], case['end'])),
-                    round((CONNECTION_FEE + MINUTE_RATE * case['billable_minutes']), 2)
-                )
-
-
-class CallStartRecordTestCase(TestCase):
-
-    def test_new_call_record_has_timestamp(self):
-        today = timezone.now()
-        rec = CallStartRecord.objects.create(call_id=uuid.uuid4(), source='505', destination='1234567890', timestamp=today)
-        self.assertIsInstance(rec.timestamp, datetime)
-
-
-class CallEndRecordTestCase(TestCase):
-
-    def test_new_call_record_has_price(self):
-        today = timezone.now().replace(hour=6, minute=0, second=0, microsecond=0)
-        start_rec = CallStartRecord.objects.create(call_id=uuid.uuid4(), source='505', destination='1234567890', timestamp=today)
-        end_rec = CallEndRecord.objects.create(call_id=start_rec.call_id, timestamp=today + timedelta(minutes=5))
-        self.assertIsNotNone(end_rec.price)
-        self.assertEqual(end_rec.price, calculate_call_rate(start_rec.timestamp, end_rec.timestamp))
+from records.models import CallEndRecord, CallStartRecord
 
 
 class CallStartRecordAPITestCase(APITestCase):
