@@ -4,15 +4,15 @@ from .querysets import CallRecordQuerySet
 
 
 class CallRecord(models.Model):
-    call_id = models.CharField(verbose_name='Call Unique ID', max_length=50, unique=True)
-    timestamp = models.DateTimeField(verbose_name='Timestamp')
+    call_id = models.CharField(verbose_name='Call Unique ID', max_length=50, unique=True, help_text='Unique Call ID')
+    timestamp = models.DateTimeField(verbose_name='Timestamp', help_text='Record Timestamp')
 
     class Meta:
         abstract = True
 
 
 class CallStartRecord(CallRecord):
-    source = models.CharField(verbose_name='Source', max_length=30)
+    source = models.CharField(verbose_name='Source', max_length=30, help_text='Source')
     destination = models.CharField(
         verbose_name='Destination',
         max_length=11,
@@ -20,7 +20,8 @@ class CallStartRecord(CallRecord):
             MinLengthValidator(10),
             MaxLengthValidator(11),
             RegexValidator(regex=r'^\d+$', message='Destination must contain only numbers.')
-        ]
+        ],
+        help_text='Destination'
     )
 
 
