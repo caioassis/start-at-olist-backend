@@ -95,3 +95,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }
+
+
+MINUTE_RATE = config('MINUTE_RATE', cast=float)
+CONNECTION_FEE = config('CONNECTION_FEE', cast=float)

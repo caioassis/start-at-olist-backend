@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
+from django.conf import settings
 
-MINUTE_RATE = 0.09
-CONNECTION_FEE = 0.36
+MINUTE_RATE = settings.MINUTE_RATE
+CONNECTION_FEE = settings.CONNECTION_FEE
 
 
 def calculate_call_rate(call_start: datetime, call_end: datetime) -> Decimal:
