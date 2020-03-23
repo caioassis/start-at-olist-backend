@@ -35,16 +35,6 @@ class CallEndRecord(CallRecord):
 
     objects = CallRecordQuerySet.as_manager()
 
-    def save(self, *args, **kwargs):
-        if self.price is None:
-            try:
-                call_start = CallStartRecord.objects.get(call_id=self.call_id)
-            except CallStartRecord.DoesNotExist:
-                pass
-            else:
-                self.price = calculate_call_rate(call_start.timestamp, self.timestamp)
-        super().save(*args, **kwargs)
-
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['call_id'], name='callendrecord_unique_callid')
