@@ -9,6 +9,6 @@ def save_price(sender, instance, **kwargs):
     try:
         call_start = CallStartRecord.objects.get(call_id=instance.call_id)
     except CallStartRecord.DoesNotExist:
-        pass
-    else:
+        return
+    if instance.timestamp:
         instance.price = calculate_call_rate(call_start.timestamp, instance.timestamp)
