@@ -1,7 +1,6 @@
 from django.core.validators import MaxLengthValidator, MinLengthValidator, RegexValidator
 from django.db import models
 from .querysets import CallRecordQuerySet
-from .utils import calculate_call_rate
 
 
 class CallRecord(models.Model):
@@ -24,18 +23,13 @@ class CallStartRecord(CallRecord):
         ]
     )
 
-    # class Meta:
-    #     constraints = [
-    #         models.UniqueConstraint(fields=['call_id'], name='callstartrecord_unique_callid')
-    #     ]
-
 
 class CallEndRecord(CallRecord):
     price = models.DecimalField(verbose_name='Price', decimal_places=2, max_digits=5, blank=True, null=True)
 
     objects = CallRecordQuerySet.as_manager()
 
-    # class Meta:
-    #     constraints = [
-    #         models.UniqueConstraint(fields=['call_id'], name='callendrecord_unique_callid')
-    #     ]
+    class Meta:
+        indexes = [
+            models.Index(fields=['timestamp'], name='idx_callendrecord_timestamp')
+        ]
