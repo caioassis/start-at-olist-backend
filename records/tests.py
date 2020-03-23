@@ -228,13 +228,13 @@ class TelephonyBillAPITestCase(APITestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.client = APIClient()
-        cls.url = reverse('get_telephony_bill')
+        cls.url = '/v1/call-records/bills/'
 
     def test_retrieve_telephony_bill(self):
         response = self.client.get(self.url, {'source': self.source})
         self.assertEqual(response.status_code, HTTP_200_OK)
-        self.assertIn('records', response.data)
-        self.assertEqual(len(response.data['records']), 4)
+        self.assertIn('results', response.data)
+        self.assertEqual(len(response.data['results']), 4)
         current_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         last_month = (current_month - timedelta(days=1)).replace(day=1)
         self.assertEqual(response.data['start_period'], last_month)
