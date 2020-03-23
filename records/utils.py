@@ -1,12 +1,17 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
 from django.conf import settings
+from .exceptions import InvalidDatePeriodException
 
 MINUTE_RATE = settings.MINUTE_RATE
 CONNECTION_FEE = settings.CONNECTION_FEE
 
 
 def calculate_call_rate(call_start: datetime, call_end: datetime) -> Decimal:
+    if not isinstance(call_start, datetime) or not isinstance(call_end, datetime):
+        raise TypeError('Params call_start and call_end must be a datetime object.')
+    if call_start > call_end:
+        raise InvalidDatePeriodException('Starting date cannot be higher than ending date.')
     minute_rate = 0
     billable_minutes = 0
     call_seconds = 0
