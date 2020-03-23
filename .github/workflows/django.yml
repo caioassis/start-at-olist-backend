@@ -28,3 +28,8 @@ jobs:
     - name: Run Tests
       run: |
         python manage.py test
+      env:
+        DJANGO_SECRET_KEY: sBDIOEkSQEJ
+        DATABASE_URL: postgres://telecom:telecom123@localhost:5432/telecom
+        MINUTE_RATE: 0.09
+        CONNECTION_FEE: 0.36
