@@ -2,11 +2,16 @@ from datetime import datetime
 from django.apps import apps
 from django.db.models import DateTimeField, DurationField, ExpressionWrapper, F, OuterRef, QuerySet, Subquery
 from django.db.models.functions import Cast
+from .exceptions import InvalidDatePeriodException
 
 
 class CallRecordQuerySet(QuerySet):
 
-    def get_calls(self, from_date: datetime, to_date: datetime, **kwargs) -> QuerySet:
+    def get_calls(self, from_date: datetime, to_date: datetime, source=None) -> QuerySet:
+        if not isinstance(from_date, datetime) or not isinstance(to_date, datetime):
+            raise TypeError('Params from_date and to_date must be a datetime object.')
+        if from_date > to_date:
+            raise InvalidDatePeriodException('Starting date cannot be higher than ending date.')
         CallStartRecord = apps.get_model('records', 'CallStartRecord')
         CallEndRecord = apps.get_model('records', 'CallEndRecord')
         call_start_records = CallStartRecord.objects.filter(call_id=OuterRef('call_id'))
@@ -21,7 +26,7 @@ class CallRecordQuerySet(QuerySet):
                 output_field=DurationField()
             )
         )
-        if kwargs:
-            records = records.filter(**kwargs)
+        if source:
+            records = records.filter(source=source)
         records = records.order_by('end').values('start', 'end', 'call_id', 'source', 'destination', 'duration', 'price')
         return records
