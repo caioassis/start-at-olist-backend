@@ -158,4 +158,9 @@ class CallRecordSerializerTestCase(TestCase):
     def test_serializer_is_valid(self):
         serializer = CallRecordSerializer(data=self.data)
         self.assertTrue(serializer.is_valid())
-        print(serializer.data)  # This raises an KeyError
+
+    def test_duration_field_format(self):
+        serializer = CallRecordSerializer(data=self.data)
+        serializer.is_valid()
+        expected_duration = '0h5m0s'
+        self.assertEqual(serializer.data['duration'], expected_duration)
