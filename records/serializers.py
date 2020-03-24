@@ -1,6 +1,6 @@
 from rest_framework.exceptions import ValidationError
-from rest_framework.serializers import (CharField, DateTimeField, DecimalField, ModelSerializer, Serializer,
-                                        SerializerMethodField)
+from rest_framework.serializers import CharField, DateTimeField, DecimalField, ModelSerializer, Serializer
+from .fields import DurationField
 from .models import CallEndRecord, CallStartRecord
 
 
@@ -39,15 +39,5 @@ class CallRecordSerializer(Serializer):
     end = DateTimeField()
     call_id = CharField()
     destination = CharField()
-    duration = SerializerMethodField()
+    duration = DurationField()
     price = DecimalField(max_digits=10, decimal_places=2)
-
-    def get_duration(self, obj):
-        """
-        Format duration from seconds to h m s.
-        """
-        duration = int(obj['duration'].total_seconds())
-        hours, duration = divmod(duration, 60 * 60)
-        minutes, duration = divmod(duration, 60)
-        seconds = duration
-        return f'{hours}h{minutes}m{seconds}s'
