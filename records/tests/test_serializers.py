@@ -117,7 +117,7 @@ class CallEndRecordCreateSerializerTestCase(TestCase):
         serializer = CallEndRecordCreateSerializer(data=data)
         self.assertFalse(serializer.is_valid())
         self.assertListEqual(
-            serializer.errors['non_field_errors'],
+            serializer.errors['timestamp'],
             [ErrorDetail(string='Call end record timestamp cannot be earlier than call start record timestamp.', code='invalid')]
         )
 
@@ -127,7 +127,7 @@ class CallEndRecordCreateSerializerTestCase(TestCase):
         serializer = CallEndRecordCreateSerializer(data=data)
         self.assertFalse(serializer.is_valid())
         self.assertListEqual(
-            serializer.errors['non_field_errors'],
+            serializer.errors['call_id'],
             [ErrorDetail(string='Given call_id does not exist.', code='invalid')]
         )
 

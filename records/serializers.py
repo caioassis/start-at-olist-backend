@@ -20,9 +20,9 @@ class CallEndRecordCreateSerializer(ModelSerializer):
         try:
             call_start_record = CallStartRecord.objects.get(call_id=call_id)
         except CallStartRecord.DoesNotExist:
-            raise ValidationError('Given call_id does not exist.')
+            raise ValidationError({'call_id': 'Given call_id does not exist.'})
         if timestamp < call_start_record.timestamp:
-            raise ValidationError('Call end record timestamp cannot be earlier than call start record timestamp.')
+            raise ValidationError({'timestamp': 'Call end record timestamp cannot be earlier than call start record timestamp.'})
         return attrs
 
     class Meta:

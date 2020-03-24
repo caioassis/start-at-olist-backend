@@ -2,12 +2,14 @@ import random
 import uuid
 from datetime import timedelta
 from django.urls import reverse
-from django.utils import dateparse, timezone
-from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST
+from django.utils import timezone
+from freezegun import freeze_time
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_422_UNPROCESSABLE_ENTITY
 from rest_framework.test import APIClient, APITestCase
 from records.models import CallEndRecord, CallStartRecord
 
 
+@freeze_time('2020-02-01')
 class CallStartRecordAPITestCase(APITestCase):
 
     @classmethod
@@ -15,96 +17,152 @@ class CallStartRecordAPITestCase(APITestCase):
         super().setUpClass()
         cls.client = APIClient()
         cls.post_url = reverse('call_start_record_create')
-        cls.today = timezone.now().strftime('%Y-%m-%dT%H:%M:%S%z')
-
-    def test_new_call_start_record(self):
-        response = self.client.post(self.post_url, format='json')
-        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
-        data = {
-            'source': '505',
-            'destination': '1234567890',
-            'call_id': '12345',
-            'timestamp': self.today
+        cls.data = {
+            'source': '9998852642',
+            'destination': '9993468278',
+            'call_id': str(uuid.uuid4()),
+            'timestamp': timezone.now()
         }
-        response = self.client.post(self.post_url, data, format='json')
+
+    def test_create_call_start_record(self):
+        response = self.client.post(self.post_url, self.data, format='json')
         self.assertEqual(response.status_code, HTTP_201_CREATED)
         self.assertEqual(CallStartRecord.objects.all().count(), 1)
+        expected_fields = ['id', 'source', 'destination', 'timestamp', 'call_id']
+        self.assertSetEqual(set(response.data.keys()), set(expected_fields))
 
     def test_new_call_start_record_requires_fields(self):
-        required_fields = ['call_id', 'destination', 'source', 'timestamp']
-        response = self.client.post(self.post_url, format='json')
-        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
-        response_required_fields = sorted(list(response.data.keys()))
-        self.assertEqual(response_required_fields, required_fields)
+        required_field_error = ['This field is required.']
+        expected_errors = {
+            'source': required_field_error,
+            'destination': required_field_error,
+            'timestamp': required_field_error,
+            'call_id': required_field_error
+        }
+        for field in self.data.keys():
+            with self.subTest(field=field):
+                data = self.data.copy()
+                del data[field]
+                response = self.client.post(self.post_url, data, format='json')
+                self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+                self.assertListEqual(response.data[field], expected_errors[field])
 
     def test_new_call_start_record_with_duplicated_call_id(self):
-        data = {
-            'source': '505',
-            'destination': '1234567890',
-            'call_id': '12345',
-            'timestamp': self.today
-        }
-        response = self.client.post(self.post_url, data, format='json')
-        self.assertEqual(response.status_code, HTTP_201_CREATED)
+        CallStartRecord.objects.create(**self.data)
+        response = self.client.post(self.post_url, self.data, format='json')
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+        content = response.json()
+        self.assertDictEqual(
+            content,
+            {'call_id': ['call start record with this Call Unique ID already exists.']}
+        )
+
+    def test_new_call_start_record_with_invalid_destination(self):
+        data = self.data.copy()
+        invalid_destinations = [
+            '123456789',  # length 9
+            '123456789012'  # length 12
+        ]
+
+        data['destination'] = invalid_destinations.pop(0)
         response = self.client.post(self.post_url, data, format='json')
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+        content = response.json()
+        self.assertDictEqual(content, {'destination': ['Ensure this field has at least 10 characters.']})
 
-    def test_new_call_start_record_with_destination(self):
-        data = {
-            'source': '505',
-            'destination': '1a2b3c4d',  # invalid destination
-            'call_id': str(uuid.uuid4()),
-            'timestamp': self.today
-        }
+        data['destination'] = invalid_destinations.pop(0)
         response = self.client.post(self.post_url, data, format='json')
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
-        data['call_id'] = str(uuid.uuid4())
-        data['destination'] = '1122334455'  # valid destination (length 10)
-        response = self.client.post(self.post_url, data, format='json')
-        self.assertEqual(response.status_code, HTTP_201_CREATED)
-        data['call_id'] = str(uuid.uuid4())
-        data['destination'] = '11223344556'  # valid destination (length 11)
-        response = self.client.post(self.post_url, data, format='json')
-        self.assertEqual(response.status_code, HTTP_201_CREATED)
+        content = response.json()
+        self.assertDictEqual(content, {'destination': ['Ensure this field has no more than 11 characters.']})
 
 
+@freeze_time('2020-02-01')
 class CallEndRecordAPITestCase(APITestCase):
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        today = timezone.now()
         cls.client = APIClient()
         cls.post_url = reverse('call_end_record_create')
-        cls.call_start_record = CallStartRecord.objects.create(source='505', call_id=str(uuid.uuid4()),
-                                                               destination='1234567890', timestamp=today)
+        cls.call_start_record = CallStartRecord.objects.create(**{
+            'source': '9998852642',
+            'destination': '9993468278',
+            'call_id': str(uuid.uuid4()),
+            'timestamp': timezone.now()
+        })
 
-    def test_new_call_end_record(self):
+    def test_create_call_end_record(self):
         call_id = self.call_start_record.call_id
         timestamp = self.call_start_record.timestamp + timedelta(minutes=5)
         response = self.client.post(self.post_url, {'call_id': call_id, 'timestamp': timestamp}, format='json')
         self.assertEqual(response.status_code, HTTP_201_CREATED)
-        self.assertIn('timestamp', response.data)
-        call_end_record_timestamp = dateparse.parse_datetime(response.data['timestamp'])
-        self.assertEqual(call_end_record_timestamp, timestamp)
-        self.assertIsNotNone(response.data['price'])
+        self.assertEqual(CallEndRecord.objects.count(), 1)
+        content = response.json()
+        expected_fields = ['id', 'timestamp', 'call_id', 'price']
+        self.assertSetEqual(set(content.keys()), set(expected_fields))
+
+    def test_create_call_end_record_requires_fields(self):
+        required_field_error = ['This field is required.']
+        expected_errors = {
+            'timestamp': required_field_error,
+            'call_id': required_field_error
+        }
+        data = {
+            'call_id': self.call_start_record.call_id,
+            'timestamp': self.call_start_record.timestamp + timedelta(minutes=5)
+        }
+        for field in data.keys():
+            with self.subTest(field=field):
+                payload = data.copy()
+                del payload[field]
+                response = self.client.post(self.post_url, payload, format='json')
+                self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+                content = response.json()
+                self.assertListEqual(content[field], expected_errors[field])
+
+    def test_create_call_end_record_with_inexistent_call_id(self):
+        inexistent_call_id = str(uuid.uuid4())
+        data = {
+            'call_id': inexistent_call_id,
+            'timestamp': self.call_start_record.timestamp + timedelta(minutes=5)
+        }
+        response = self.client.post(self.post_url, data, format='json')
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+        content = response.json()
+        self.assertDictEqual(content, {'call_id': ['Given call_id does not exist.']})
+
+    def test_create_call_end_record_with_invalid_timestamp(self):
+        invalid_timestamp = self.call_start_record.timestamp - timedelta(minutes=5)
+        data = {
+            'call_id': self.call_start_record.call_id,
+            'timestamp': invalid_timestamp
+        }
+        response = self.client.post(self.post_url, data, format='json')
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+        content = response.json()
+        self.assertDictEqual(
+            content,
+            {'timestamp': ['Call end record timestamp cannot be earlier than call start record timestamp.']}
+        )
 
 
+@freeze_time('2020-02-01')
 class TelephonyBillAPITestCase(APITestCase):
 
     @classmethod
     def setUpTestData(cls):
-        today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        last_month = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
-        cls.source = '505'
-        destination = ''.join([str(random.randint(1, 9)) for i in range(random.randint(10, 11))])
+        today = timezone.now()
+        last_month = (today - timedelta(days=1)).replace(day=1)
+        cls.source = '9998852642'
+        destination = '9993468278'
 
         # Record that started in the last day of month and ended in the first day of next month
         call_id = str(uuid.uuid4())
         cls.intermonths_billable_record = (
             CallStartRecord.objects.create(call_id=call_id, source=cls.source, destination=destination,
-                                           timestamp=today.replace(day=1, hour=5) - timedelta(days=1)),
-            CallEndRecord.objects.create(call_id=call_id, timestamp=today.replace(day=1, hour=5, minute=5))
+                                           timestamp=today.replace(hour=5) - timedelta(days=1)),
+            CallEndRecord.objects.create(call_id=call_id, timestamp=today.replace(hour=5, minute=5))
         )
 
         # Record that has price of 0
@@ -132,7 +190,7 @@ class TelephonyBillAPITestCase(APITestCase):
                                          timestamp=(last_month + timedelta(days=1)).replace(hour=5, minute=55))
         )
 
-        # Record whose call started one thay and ended another day, but it is priced
+        # Record whose call started one day and ended another day, but it is priced
         call_id = str(uuid.uuid4())
         cls.interdays_billable_record = (
             CallStartRecord.objects.create(call_id=call_id, source=cls.source, destination=destination,
@@ -164,29 +222,36 @@ class TelephonyBillAPITestCase(APITestCase):
     def test_retrieve_telephony_bill(self):
         response = self.client.get(self.url, {'source': self.source})
         self.assertEqual(response.status_code, HTTP_200_OK)
-        self.assertIn('results', response.data)
-        self.assertEqual(len(response.data['results']), 4)
-        current_month = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        last_month = (current_month - timedelta(days=1)).replace(day=1)
-        self.assertEqual(response.data['start_period'], last_month)
-        self.assertEqual(response.data['end_period'], current_month)
+        content = response.json()
+        self.assertIn('results', content)
+        self.assertEqual(len(content['results']), 4)
+        start_period = '2020-01-01T00:00:00Z'
+        end_period = '2020-02-01T00:00:00Z'
+        self.assertEqual(content['start_period'], start_period)
+        self.assertEqual(content['end_period'], end_period)
 
     def test_retrieve_telephony_bill_of_this_month(self):
         today = timezone.now().date().strftime('%Y-%m')
         response = self.client.get(self.url, {'period': today, 'source': self.source})
-        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, HTTP_422_UNPROCESSABLE_ENTITY)
+        content = response.json()
+        self.assertDictEqual(
+            content,
+            {'period': "You can't get bills from current month."}
+        )
 
     def test_retrieve_telephony_bill_of_next_month(self):
-        today = timezone.now()
-        date = timezone.now()
-        while today.month == date.month:
-            date += timedelta(days=1)
-        date = date.strftime('%Y-%m')
-        response = self.client.get(self.url, {'period': date, 'source': self.source})
-        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
-        self.assertIn('invalid', response.data)
+        next_month = '2020-03'
+        response = self.client.get(self.url, {'period': next_month, 'source': self.source})
+        self.assertEqual(response.status_code, HTTP_422_UNPROCESSABLE_ENTITY)
+        content = response.json()
+        self.assertDictEqual(
+            content,
+            {'period': "You can't get bills from next months."}
+        )
 
     def test_retrieve_telephony_bill_without_source(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
-        self.assertIn('source', response.data)
+        content = response.json()
+        self.assertDictEqual(content, {'source': 'This field is required.'})
