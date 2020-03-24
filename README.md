@@ -11,6 +11,7 @@ Assessment project of Olist, which exposes an API of call records for a telecom 
 - Django 2.2.11 (LTS version)
 - Django Rest Framework 3.11
 - PostgreSQL v12.2
+- Docker (optional)
 
 ## Installation
 > The following steps are meant to work in Linux OS. Windows commands may differ.
@@ -32,6 +33,17 @@ pip install -r requirements.txt
 Create a .env file as a copy of .env.example and set the variables.
 ```
 cp .env.example .env
+```
+Postgres service is run using docker. This step is optional. You may install postgres directly or run in the cloud, 
+but docker makes it easy to use locally. To create a container, execute the following command.
+```
+docker run --name start-at-olist -e POSTGRES_PASSWORD=<PASSWORD> -p <PORT>:5432 -d postgres
+```
+> Make sure to change <PASSWORD> and <PORT> to correct values.
+
+If you have already completed the last step, but the container is not running, execute:
+```
+docker start start-at-olist
 ```
 
 Migrate Database
